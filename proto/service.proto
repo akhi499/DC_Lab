@@ -1,0 +1,19 @@
+syntax = "proto3";
+package lb_demo;
+
+// A generic backend service. Any number of identical instances of
+// this service can run simultaneously; the Load Balancer decides
+// which instance handles each request.
+service WorkerService {
+  rpc HandleRequest (WorkRequest) returns (WorkReply);
+}
+
+message WorkRequest {
+  int32 request_id = 1;
+}
+
+message WorkReply {
+  int32 request_id = 1;
+  string handled_by = 2;
+  string status = 3;
+}
