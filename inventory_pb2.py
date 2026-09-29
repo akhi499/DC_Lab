@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0finventory.proto\x12\tinventory\"Q\n\x0eProductRequest\x12\x12\n\nproduct_id\x18\x01 \x01(\t\x12\x10\n\x08quantity\x18\x02 \x01(\x05\x12\x19\n\x11lamport_timestamp\x18\x03 \x01(\x03\"e\n\rStockResponse\x12\x11\n\tavailable\x18\x01 \x01(\x08\x12\x15\n\rcurrent_stock\x18\x02 \x01(\x05\x12\x0f\n\x07message\x18\x03 \x01(\t\x12\x19\n\x11lamport_timestamp\x18\x04 \x01(\x03\"g\n\x0fReserveResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x17\n\x0fremaining_stock\x18\x02 \x01(\x05\x12\x0f\n\x07message\x18\x03 \x01(\t\x12\x19\n\x11lamport_timestamp\x18\x04 \x01(\x03\"\\\n\x12UpdateStockRequest\x12\x12\n\nproduct_id\x18\x01 \x01(\t\x12\x17\n\x0fquantity_change\x18\x02 \x01(\x05\x12\x19\n\x11lamport_timestamp\x18\x03 \x01(\x03\"i\n\x13UpdateStockResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x15\n\rupdated_stock\x18\x02 \x01(\x05\x12\x0f\n\x07message\x18\x03 \x01(\t\x12\x19\n\x11lamport_timestamp\x18\x04 \x01(\x03\"3\n\rAccessRequest\x12\x0f\n\x07node_id\x18\x01 \x01(\x05\x12\x11\n\ttimestamp\x18\x02 \x01(\x05\"1\n\x0b\x41\x63\x63\x65ssReply\x12\x0f\n\x07node_id\x18\x01 \x01(\x05\x12\x11\n\ttimestamp\x18\x02 \x01(\x05\x32\xea\x01\n\x10InventoryService\x12\x41\n\nCheckStock\x12\x19.inventory.ProductRequest\x1a\x18.inventory.StockResponse\x12\x45\n\x0cReserveStock\x12\x19.inventory.ProductRequest\x1a\x1a.inventory.ReserveResponse\x12L\n\x0bUpdateStock\x12\x1d.inventory.UpdateStockRequest\x1a\x1e.inventory.UpdateStockResponse2Q\n\x0cMutexService\x12\x41\n\rRequestAccess\x12\x18.inventory.AccessRequest\x1a\x16.inventory.AccessReplyb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0finventory.proto\x12\tinventory\"Q\n\x0eProductRequest\x12\x12\n\nproduct_id\x18\x01 \x01(\t\x12\x10\n\x08quantity\x18\x02 \x01(\x05\x12\x19\n\x11lamport_timestamp\x18\x03 \x01(\x03\"e\n\rStockResponse\x12\x11\n\tavailable\x18\x01 \x01(\x08\x12\x15\n\rcurrent_stock\x18\x02 \x01(\x05\x12\x0f\n\x07message\x18\x03 \x01(\t\x12\x19\n\x11lamport_timestamp\x18\x04 \x01(\x03\"g\n\x0fReserveResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x17\n\x0fremaining_stock\x18\x02 \x01(\x05\x12\x0f\n\x07message\x18\x03 \x01(\t\x12\x19\n\x11lamport_timestamp\x18\x04 \x01(\x03\"\\\n\x12UpdateStockRequest\x12\x12\n\nproduct_id\x18\x01 \x01(\t\x12\x17\n\x0fquantity_change\x18\x02 \x01(\x05\x12\x19\n\x11lamport_timestamp\x18\x03 \x01(\x03\"i\n\x13UpdateStockResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x15\n\rupdated_stock\x18\x02 \x01(\x05\x12\x0f\n\x07message\x18\x03 \x01(\t\x12\x19\n\x11lamport_timestamp\x18\x04 \x01(\x03\"9\n\x0bItemRequest\x12\x0f\n\x07item_id\x18\x01 \x01(\t\x12\x19\n\x11lamport_timestamp\x18\x02 \x01(\x03\"H\n\x0cItemResponse\x12\x0f\n\x07item_id\x18\x01 \x01(\t\x12\x0c\n\x04\x64\x61ta\x18\x02 \x01(\t\x12\x19\n\x11lamport_timestamp\x18\x03 \x01(\x03\"3\n\rAccessRequest\x12\x0f\n\x07node_id\x18\x01 \x01(\x05\x12\x11\n\ttimestamp\x18\x02 \x01(\x05\"1\n\x0b\x41\x63\x63\x65ssReply\x12\x0f\n\x07node_id\x18\x01 \x01(\x05\x12\x11\n\ttimestamp\x18\x02 \x01(\x05\x32\xea\x01\n\x10InventoryService\x12\x41\n\nCheckStock\x12\x19.inventory.ProductRequest\x1a\x18.inventory.StockResponse\x12\x45\n\x0cReserveStock\x12\x19.inventory.ProductRequest\x1a\x1a.inventory.ReserveResponse\x12L\n\x0bUpdateStock\x12\x1d.inventory.UpdateStockRequest\x1a\x1e.inventory.UpdateStockResponse2Q\n\x0cMutexService\x12\x41\n\rRequestAccess\x12\x18.inventory.AccessRequest\x1a\x16.inventory.AccessReplyb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -41,12 +41,16 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_UPDATESTOCKREQUEST']._serialized_end=413
   _globals['_UPDATESTOCKRESPONSE']._serialized_start=415
   _globals['_UPDATESTOCKRESPONSE']._serialized_end=520
-  _globals['_ACCESSREQUEST']._serialized_start=522
-  _globals['_ACCESSREQUEST']._serialized_end=573
-  _globals['_ACCESSREPLY']._serialized_start=575
-  _globals['_ACCESSREPLY']._serialized_end=624
-  _globals['_INVENTORYSERVICE']._serialized_start=627
-  _globals['_INVENTORYSERVICE']._serialized_end=861
-  _globals['_MUTEXSERVICE']._serialized_start=863
-  _globals['_MUTEXSERVICE']._serialized_end=944
+  _globals['_ITEMREQUEST']._serialized_start=522
+  _globals['_ITEMREQUEST']._serialized_end=579
+  _globals['_ITEMRESPONSE']._serialized_start=581
+  _globals['_ITEMRESPONSE']._serialized_end=653
+  _globals['_ACCESSREQUEST']._serialized_start=655
+  _globals['_ACCESSREQUEST']._serialized_end=706
+  _globals['_ACCESSREPLY']._serialized_start=708
+  _globals['_ACCESSREPLY']._serialized_end=757
+  _globals['_INVENTORYSERVICE']._serialized_start=760
+  _globals['_INVENTORYSERVICE']._serialized_end=994
+  _globals['_MUTEXSERVICE']._serialized_start=996
+  _globals['_MUTEXSERVICE']._serialized_end=1077
 # @@protoc_insertion_point(module_scope)

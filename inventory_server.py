@@ -1,3 +1,4 @@
+import json
 from concurrent import futures
 import threading
 
@@ -143,6 +144,36 @@ class InventoryService(inventory_pb2_grpc.InventoryServiceServicer):
                 message=f"Stock updated for {request.product_id}.",
                 lamport_timestamp=response_time,
             )
+
+    def GetItem(self, request, context):
+        current_time = self._clock.update(request.lamport_timestamp)
+        item_id = request.item_id
+
+        print(
+            f"[SERVER] GetItem received | "
+            f"Item={item_id} | "
+            f"Client timestamp={request.lamport_timestamp} | "
+            f"Server clock={current_time}"
+        )
+
+        payload = {
+            "item_id": item_id,
+            "name": item_id,
+            "stock": self._stock.get(item_id, 0),
+            "available": self._stock.get(item_id, 0) > 0,
+        }
+        response_time = self._clock.tick()
+
+        print(
+            f"[SERVER] GetItem response | "
+            f"Lamport timestamp={response_time}"
+        )
+
+        return inventory_pb2.ItemResponse(
+            item_id=item_id,
+            data=json.dumps(payload),
+            lamport_timestamp=response_time,
+        )
 
 
 def serve():

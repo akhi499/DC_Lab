@@ -40,6 +40,18 @@ message UpdateStockResponse {
   string message = 3;
   int64 lamport_timestamp = 4;
 }
+
+message ItemRequest {
+  string item_id = 1;
+  int64 lamport_timestamp = 2;
+}
+
+message ItemResponse {
+  string item_id = 1;
+  string data = 2;
+  int64 lamport_timestamp = 3;
+}
+
 service MutexService {
   rpc RequestAccess (AccessRequest) returns (AccessReply);
 }
