@@ -3,3 +3,8 @@ __pycache__/
 .venv/
 venv/
 .env
+# DFS lab runtime artifacts
+.dfs_client_clock
+*.bin
+*.tmp
+dfs_data/

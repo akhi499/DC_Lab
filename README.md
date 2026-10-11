@@ -71,6 +71,22 @@ The tests require the three ports to be available. All child processes are termi
 
 ---
 
+# Experiment 11: Distributed File System Storage
+
+This repository now includes the chunked, replicated DFS lab described in the walkthrough.
+
+- Protocol: [dfs_lab/proto/dfs.proto](dfs_lab/proto/dfs.proto)
+- Metadata server: [dfs_lab/dfs_metadata.py](dfs_lab/dfs_metadata.py)
+- Storage nodes: [dfs_lab/dfs_storage.py](dfs_lab/dfs_storage.py)
+- Client: [dfs_lab/dfs_client.py](dfs_lab/dfs_client.py)
+- Repair script: [dfs_lab/dfs_repair.py](dfs_lab/dfs_repair.py)
+- Full step-by-step guide: [dfs_lab/docs/dfs_experiment_11.md](dfs_lab/docs/dfs_experiment_11.md)
+- Lab folder: [dfs_lab/README.md](dfs_lab/README.md)
+
+The guide includes screenshot references for the cluster architecture, post-upload status, and repair/failover flow.
+
+---
+
 # Existing Mini gRPC Flask Project
 
 This project is a small version of the experiment shown in the presentation:
