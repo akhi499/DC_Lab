@@ -22,6 +22,22 @@ LEADER_LINE = re.compile(
 )
 
 
+class KubernetesConfigurationTests(unittest.TestCase):
+    def test_peer_mapping_uses_kubernetes_service_names_in_kubernetes_mode(self):
+        original = os.environ.get("RUN_ENV")
+        try:
+            os.environ["RUN_ENV"] = "kubernetes"
+            peers = raft_node.resolve_peers()
+            self.assertEqual(peers["A"], "raft-a:60401")
+            self.assertEqual(peers["B"], "raft-b:60402")
+            self.assertEqual(peers["C"], "raft-c:60403")
+        finally:
+            if original is None:
+                os.environ.pop("RUN_ENV", None)
+            else:
+                os.environ["RUN_ENV"] = original
+
+
 class RaftTermTests(unittest.TestCase):
     def test_votes_are_limited_to_one_candidate_per_term(self):
         node = raft_node.RaftNode("B")

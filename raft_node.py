@@ -1,5 +1,6 @@
 """Three-node Raft election demo with a leader-gated mutex coordinator."""
 
+import os
 import random
 import sys
 import threading
@@ -14,15 +15,41 @@ import raft_pb2
 import raft_pb2_grpc
 
 
-PEERS = {
-    "A": "localhost:60401",
-    "B": "localhost:60402",
-    "C": "localhost:60403",
+PORTS = {
+    "A": 60401,
+    "B": 60402,
+    "C": 60403,
 }
+
+RUN_ENV = os.environ.get("RUN_ENV", "local").lower()
+LOCAL_PEERS = {
+    name: f"localhost:{port}" for name, port in PORTS.items()
+}
+
+K8S_PEERS = {
+    name: f"raft-{name.lower()}:{port}" for name, port in PORTS.items()
+}
+
+
+def current_bind_host():
+    return "0.0.0.0" if RUN_ENV == "kubernetes" else "localhost"
+
+
+def resolve_peers():
+    run_env = os.environ.get("RUN_ENV", "local").lower()
+    base_map = K8S_PEERS if run_env == "kubernetes" else LOCAL_PEERS
+    peers = {}
+    for name, default_address in base_map.items():
+        env_name = f"RAFT_{name}_ADDR"
+        peers[name] = os.environ.get(env_name, default_address)
+    return peers
+
+
+PEERS = resolve_peers()
 HEARTBEAT_INTERVAL = 0.5
-ELECTION_TIMEOUT_MIN = 1.5
-ELECTION_TIMEOUT_MAX = 3.0
-RPC_TIMEOUT = 0.5
+ELECTION_TIMEOUT_MIN = 4.0
+ELECTION_TIMEOUT_MAX = 7.0
+RPC_TIMEOUT = 5.0
 MAJORITY = len(PEERS) // 2 + 1
 
 
@@ -33,6 +60,14 @@ class RaftNode(raft_pb2_grpc.RaftServiceServicer):
 
         self.node_id = node_id
         self.peers = {name: address for name, address in PEERS.items() if name != node_id}
+        self.peer_channels = {
+            peer_id: grpc.insecure_channel(address)
+            for peer_id, address in self.peers.items()
+        }
+        self.peer_stubs = {
+            peer_id: raft_pb2_grpc.RaftServiceStub(channel)
+            for peer_id, channel in self.peer_channels.items()
+        }
         self.state = "FOLLOWER"
         self.current_term = 0
         self.voted_for = None
@@ -79,6 +114,8 @@ class RaftNode(raft_pb2_grpc.RaftServiceServicer):
 
     def stop(self):
         self._stop_event.set()
+        for channel in self.peer_channels.values():
+            channel.close()
 
     def RequestVote(self, request, context):
         granted = False
@@ -177,12 +214,10 @@ class RaftNode(raft_pb2_grpc.RaftServiceServicer):
 
     def _request_vote(self, peer_id, address, term):
         try:
-            with grpc.insecure_channel(address) as channel:
-                stub = raft_pb2_grpc.RaftServiceStub(channel)
-                reply = stub.RequestVote(
-                    raft_pb2.VoteRequest(term=term, candidate_id=self.node_id),
-                    timeout=RPC_TIMEOUT,
-                )
+            reply = self.peer_stubs[peer_id].RequestVote(
+                raft_pb2.VoteRequest(term=term, candidate_id=self.node_id),
+                timeout=RPC_TIMEOUT,
+            )
         except grpc.RpcError as error:
             self.log(f"Peer {peer_id} unavailable for vote: {error.code().name}")
             return
@@ -228,21 +263,22 @@ class RaftNode(raft_pb2_grpc.RaftServiceServicer):
             with self.lock:
                 if self.state != "LEADER":
                     continue
-                term = self.current_term
+            term = self.current_term
 
             for peer_id, address in self.peers.items():
-                if self._stop_event.is_set():
-                    break
-                self._send_heartbeat(peer_id, address, term)
+                threading.Thread(
+                    target=self._send_heartbeat,
+                    args=(peer_id, address, term),
+                    name=f"{self.node_id}-heartbeat-{peer_id}",
+                    daemon=True,
+                ).start()
 
     def _send_heartbeat(self, peer_id, address, term):
         try:
-            with grpc.insecure_channel(address) as channel:
-                stub = raft_pb2_grpc.RaftServiceStub(channel)
-                reply = stub.AppendEntries(
-                    raft_pb2.HeartbeatRequest(term=term, leader_id=self.node_id),
-                    timeout=RPC_TIMEOUT,
-                )
+            reply = self.peer_stubs[peer_id].AppendEntries(
+                raft_pb2.HeartbeatRequest(term=term, leader_id=self.node_id),
+                timeout=RPC_TIMEOUT,
+            )
         except grpc.RpcError as error:
             self.log(f"Peer {peer_id} unavailable for heartbeat: {error.code().name}")
             return
@@ -298,13 +334,14 @@ def serve(node_id):
         CoordinatorService(node),
         server,
     )
-    bound_port = server.add_insecure_port(PEERS[node_id])
+    listen_address = f"{current_bind_host()}:{PORTS[node_id]}"
+    bound_port = server.add_insecure_port(listen_address)
     if not bound_port:
-        raise RuntimeError(f"Could not bind {PEERS[node_id]}")
+        raise RuntimeError(f"Could not bind {listen_address}")
 
     server.start()
     node.start()
-    print(f"Raft coordinator {node_id} listening on {PEERS[node_id]}", flush=True)
+    print(f"Raft coordinator {node_id} listening on {listen_address}", flush=True)
     try:
         server.wait_for_termination()
     except KeyboardInterrupt:

@@ -1,0 +1,170 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: raft-a
+  labels:
+    app: raft-a
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: raft-a
+  template:
+    metadata:
+      labels:
+        app: raft-a
+    spec:
+      containers:
+        - name: raft-a
+          image: myapp-backend:latest
+          imagePullPolicy: Never
+          command: ["python", "raft_node.py", "A"]
+          env:
+            - name: RUN_ENV
+              value: "kubernetes"
+          ports:
+            - containerPort: 60401
+              name: grpc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: raft-a
+  labels:
+    app: raft-a
+spec:
+  selector:
+    app: raft-a
+  ports:
+    - name: grpc
+      port: 60401
+      targetPort: 60401
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: raft-b
+  labels:
+    app: raft-b
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: raft-b
+  template:
+    metadata:
+      labels:
+        app: raft-b
+    spec:
+      containers:
+        - name: raft-b
+          image: myapp-backend:latest
+          imagePullPolicy: Never
+          command: ["python", "raft_node.py", "B"]
+          env:
+            - name: RUN_ENV
+              value: "kubernetes"
+          ports:
+            - containerPort: 60402
+              name: grpc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: raft-b
+  labels:
+    app: raft-b
+spec:
+  selector:
+    app: raft-b
+  ports:
+    - name: grpc
+      port: 60402
+      targetPort: 60402
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: raft-c
+  labels:
+    app: raft-c
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: raft-c
+  template:
+    metadata:
+      labels:
+        app: raft-c
+    spec:
+      containers:
+        - name: raft-c
+          image: myapp-backend:latest
+          imagePullPolicy: Never
+          command: ["python", "raft_node.py", "C"]
+          env:
+            - name: RUN_ENV
+              value: "kubernetes"
+          ports:
+            - containerPort: 60403
+              name: grpc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: raft-c
+  labels:
+    app: raft-c
+spec:
+  selector:
+    app: raft-c
+  ports:
+    - name: grpc
+      port: 60403
+      targetPort: 60403
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+  labels:
+    app: worker
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: worker
+  template:
+    metadata:
+      labels:
+        app: worker
+    spec:
+      containers:
+        - name: worker
+          image: myapp-backend:latest
+          imagePullPolicy: Never
+          command: ["python", "worker_server.py", "60201"]
+          env:
+            - name: RUN_ENV
+              value: "kubernetes"
+            - name: WORKER_SERVICE_PORT
+              value: "60201"
+          ports:
+            - containerPort: 60201
+              name: grpc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: worker
+  labels:
+    app: worker
+spec:
+  clusterIP: None
+  selector:
+    app: worker
+  ports:
+    - name: grpc
+      port: 60201
+      targetPort: 60201

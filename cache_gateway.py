@@ -73,6 +73,6 @@ def get_item(item_id):
 
 
 if __name__ == "__main__":
-    item_id = int(sys.argv[1]) if len(sys.argv) > 1 else 1
+    item_id = sys.argv[1] if len(sys.argv) > 1 else "1"
     data, source = get_item(item_id)
     print(f"\nResult (source={source}): {data}")

@@ -6,6 +6,7 @@ service InventoryService {
   rpc CheckStock (ProductRequest) returns (StockResponse);
   rpc ReserveStock (ProductRequest) returns (ReserveResponse);
   rpc UpdateStock (UpdateStockRequest) returns (UpdateStockResponse);
+  rpc GetItem (ItemRequest) returns (ItemResponse);
 }
 
 message ProductRequest {

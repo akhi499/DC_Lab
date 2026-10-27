@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: load-test
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        app: load-test
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: load-test
+          image: myapp-backend:latest
+          imagePullPolicy: Never
+          command: ["python", "load_test.py"]
+          env:
+            - name: RUN_ENV
+              value: "kubernetes"
+            - name: TARGET_ADDR
+              value: "dns:///worker:60201"
+            - name: NUM_REQUESTS
+              value: "20"
